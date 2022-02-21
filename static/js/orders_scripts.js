@@ -62,10 +62,10 @@ $(document).ready(function () {
             var item_price = 0;
         } else {
             var item_price = parseFloat($price_object.text());
-        };
+        }
         $order_total_cost.text(Number(parseFloat($order_total_cost.text()) - quantity_delta * item_price).toFixed(2));
         $currentState = $(".formset_row").clone();
-    };
+    }
 
     // Be carefull with class of buttons
     $('.formset_row').formset({
@@ -76,6 +76,6 @@ $(document).ready(function () {
         prefix: 'orderitems',
         added: setDefaultValue,
         removed: itemDelete,
-        hideLastAddForm: true
+        hideLastAddForm: false,
     });
 });
