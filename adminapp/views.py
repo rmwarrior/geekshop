@@ -92,11 +92,14 @@ class ProductCategoryCreateView(LoginRequiredMixin, CreateView):
     fields = "__all__"
 
 
+from django.db.models import F
+
+
 class ProductCategoryUpdateView(LoginRequiredMixin, UpdateView):
     model = ProductCategory
     template_name = "adminapp/category_update.html"
     success_url = reverse_lazy("admin:categories")
-    fields = "__all__"
+    form_class = ProductCategoryEditForm
 
     def get_context_data(self, **kwargs):
         context = super(ProductCategoryUpdateView, self).get_context_data(**kwargs)
@@ -104,11 +107,14 @@ class ProductCategoryUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
     def form_valid(self, form):
-        self.object.save()
-        for item in self.object.product_set.all():
-            item.is_active = self.object.is_active
-            item.save()
-        return HttpResponseRedirect(self.get_success_url())
+        if "discount" in form.cleaned_data:
+            discount = form.cleaned_data["discount"]
+            if discount:
+                print(f"применяется скидка {discount}% к товарам категории {self.object.name}")
+                self.object.product_set.update(price=F("price") * (1 - discount / 100))
+                db_profile_by_type(self.__class__, "UPDATE", connection.queries)
+
+        return super().form_valid(form)
 
 
 class ProductCategoryDeleteView(LoginRequiredMixin, DeleteView):
